@@ -121,6 +121,7 @@ class MatrixGen():
             from_y -= wall_height
             to_y -= wall_height
 
+        # TODO: make this actually replace something
         # actually replace the wall now
         mat[from_x:to_x][from_y:to_y] = wall
 
