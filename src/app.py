@@ -2,6 +2,7 @@
 
 from flask import Flask, request, Response, jsonify
 from matrixgen import MatrixGen
+import json
 
 app = Flask(__name__)
 
@@ -12,22 +13,30 @@ Generates a game matrix and sends it to the client
 def gen_matrix():
     error = None
 
-    mat_x_size = request.args.get('x')
-    mat_y_size = request.args.get('y')
+    mat_size = int(request.args.get('size'))
+
+    if not mat_size:
+        error = {'error' : 'Faulty request, missing width argument'}
+        return jsonify(error)
+
+    if mat_size < 8:
+        error = {'error' : 'Faulty request, matrix size has to be at least 8.'}
+        return jsonify(error)
 
     # generate matrix
     mg = MatrixGen()
-    matrix = mg.gen_mat(mat_x_size, mat_y_size)
-    if not matrix:
+    mtrx = mg.gen_mat(mat_size)
+    if not mtrx:
         error = {'error' : 'Error when generating matrix, generator returned `None`'}
         return jsonify(error)
 
+    print(mtrx.__str__())
 
-    print(matrix.__str__())
+    return_json = {}
+    return_json['size'] = mtrx.size
+    return_json['matrix'] = mtrx.matrix
 
-    # print(json.dumps(matrix))
-
-    return matrix.__str__()
+    return jsonify(return_json)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

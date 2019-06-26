@@ -1,25 +1,40 @@
 import numpy as np
-import matrix
+from matrix import Matrix
+from coordinate import Coordinate
 from random import randint
 from math import log, sqrt
 
 
 class MatrixGen():
 
-    wall1 = np.matrix('0, 1;\
-                       1, 1;\
-                       1, 0'.rstrip())
+    rm = lambda x : x.strip("\n").strip(" ")
 
-    wall2 = np.array('1, 0;\
-                      1, 1;\
-                      0, 1'.rstrip())
+    '''
+    [[0, 1]
+     [1, 1]
+     [1, 0]]
+    '''
+    wall1 = [[0, 1],[1, 1],[1, 0]]
 
-    wall3 = np.array('1, 1, 1, 1')
+    '''
+    [[1, 0]
+     [1, 1]
+     [0, 1]]
+    '''
+    wall2 = [[1, 0],[1, 1],[0, 1]]
 
-    wall4 = np.array('1;\
-                      1;\
-                      1;\
-                      1'.rstrip())
+    '''
+    [1, 1, 1, 1]
+    '''
+    wall3 = [1, 1, 1, 1]
+
+    '''
+     [[1]
+      [1]
+      [1]
+      [1]]
+    '''
+    wall4 = [[1],[1],[1],[1]]
 
     wall_list = [wall1, wall2, wall3, wall4]
 
@@ -27,20 +42,20 @@ class MatrixGen():
     def __init__(self):
         pass
 
-    def gen_mat(self, width, height):
-        if not width or not height:
+    def gen_mat(self, size):
+        if not size:
             return None
 
-        width=int(width)
-        height=int(height)
+        width=int(size)
+        height=int(size)
 
-        mat = np.zeros((width, height), dtype=int)
+        mat = np.zeros((width, height), dtype=int).tolist()
 
         min_amount_walls = int(log(sqrt(width * height)))
         max_amount_walls = int(log(sqrt(width * height)) * 2)
-        final_mat = self.add_walls(mat, min_amount_walls, max_amount_walls)
+        final_mat = self.add_walls(mat, width, min_amount_walls, max_amount_walls)
 
-        mat_obj = Matrix(width, height, final_mat)
+        mat_obj = Matrix(width, final_mat)
 
         return mat_obj
 
@@ -49,28 +64,34 @@ class MatrixGen():
     the amount of walls is in a range between the minimum amount of walls and
     maximum amount of walls passed over to the function
     """
-    def add_walls(self, mat, min_w, max_w):
+    def add_walls(self, mat, width, min_w, max_w):
         # create a random amount of walls in a range of the minimum amount
         # of walls and the maximum amount of walls
         for i in range(0, randint(min_w, max_w)):
-            coord = Coordinate.gen_rand_coord()
+            coord = Coordinate()
+            coord.gen_rand_coord(width)
 
             # grab a random wall from the list
-            wall = wall_list[randint(0, len(wall_list))]
+            wall = self.wall_list[randint(0, len(self.wall_list) - 1)]
 
-            mat = replace_with_wall(mat, coord.x, coord.y, wall)
+            mat = self.replace_with_wall(mat, coord.x, coord.y, wall)
         return mat
 
     def replace_with_wall(self, mat, x, y, wall):
-        wall_width = wall.shape[0]
-        wall_height = wall.shape[1]
+        # if wall is one dimensional, don't try to get the size of the second dimension
+        wall_width = 1
+        wall_height = 1
+        if type(wall[0]) is not int:
+            wall_width = len(wall[0])
+        if type(wall) is not int:
+            wall_height = len(wall)
 
         from_x = x
         from_y = y
 
         # coordinate for wall + wall dimensions to create a replaceable shape in the matrix
-        to_x = wall.shape[0] + x
-        to_y = wall.shape[1] + y
+        to_x = wall_width + x
+        to_y = wall_height + y
 
         """
         We have to move our wall back inside if the coordinates specified make
@@ -90,17 +111,17 @@ class MatrixGen():
                             X
         """
         # if the wall would go out of bounds by width
-        if to_x > mat.shape[0]:
+        if to_x > wall_width:
             # reduce from_x and to_x by the same amount to make it fit
             from_x -= wall_width
             to_x -= wall_width
 
         # if the wall would go out of bounds by height
-        if to_y > mat.shape[1]:
+        if to_y > wall_height:
             from_y -= wall_height
             to_y -= wall_height
 
         # actually replace the wall now
-        mat[from_x:to_x, from_y:to_y] = wall
+        mat[from_x:to_x][from_y:to_y] = wall
 
         return mat

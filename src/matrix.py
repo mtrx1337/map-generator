@@ -1,22 +1,19 @@
 class Matrix():
-    width = None
-    height = None
+    size = None
     matrix = None
 
-    def __init__(self, width, height, matrix):
-        self.width = width
-        self.height = height
+    def __init__(self, size, matrix):
+        self.size = size
         self.matrix = matrix
 
     def __str__(self):
         return_str = ""
+        matrix = self.matrix
         if matrix:
             for x in matrix:
                 for y in x:
-                    if y < len(matrix[x]):
-                        return_str = return_str + matrix[x][y]
-                    else:
-                        return_str = return_str + "\n"
+                    return_str += str(x[y])
+                return_str += "\n"
             return return_str
         else:
             return ""
